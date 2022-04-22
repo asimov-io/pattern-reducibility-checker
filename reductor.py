@@ -80,7 +80,7 @@ class PatternReducibility:
                     # We do not know yet if it is reducible. For now, it is considered non-reducible.
                     self.repr_to_red[c] = {"rank": float("inf"), "reason": ""}
 
-    def representative(self, c: tuple[Color, ...]) -> tuple[Color, ...]:
+    def _representative(self, c: tuple[Color, ...]) -> tuple[Color, ...]:
         """
         Returns the representative of a coloring.
 
@@ -89,7 +89,7 @@ class PatternReducibility:
         """
         return self.repr_map[self.color_repr_map[c]]
 
-    def make_aux_graph(self, c: tuple[Color, ...], r: int, color_pair: tuple[Color, Color]):
+    def _make_aux_graph(self, c: tuple[Color, ...], r: int, color_pair: tuple[Color, Color]):
         """
         Returns the auxiliary graph of `c` with respect to Γ and `color_pair` where Γ is the set of the colorings
         that are already proven of rank < `r`, i.e. Γ = {`c'` coloring such that `self.repr_to_red[c']["rank"] < r`}.
@@ -126,13 +126,13 @@ class PatternReducibility:
         for u in g.keys():
             for v in g.keys():
                 # If `u` = `v`, `{u, v}` = `{u}` and we only swap the edge indexed by `u`.
-                if self.repr_to_red[self.representative(swap({u, v}))]["rank"] >= r:
+                if self.repr_to_red[self._representative(swap({u, v}))]["rank"] >= r:
                     # We follow the rules given in definition 2.4 for adding edges and loops.
                     g[u].add(v)
                     g[v].add(u)
         return NCPQMatching(g)
 
-    def is_coloring_reducible(self, c: tuple[Color, ...], r: int):
+    def _is_coloring_reducible(self, c: tuple[Color, ...], r: int):
         """
         Determines whether coloring `c` is reducible to the set of known colorings of rank < `r`.
 
@@ -146,7 +146,7 @@ class PatternReducibility:
             color1, color2 = {1, 2, 3} - {color}
             if c != tuple(Color(color) for _ in range(self.k)):
                 # We do not consider the case where the auxiliary graph is empty — it is trivially matchable.
-                aux_graph = self.make_aux_graph(c, r, (Color(color1), Color(color2)))
+                aux_graph = self._make_aux_graph(c, r, (Color(color1), Color(color2)))
                 if not aux_graph.matchable():
                     return {"reducible": True, "color pair": (color1, color2)}
         return {"reducible": False, "color pair": ()}
@@ -172,7 +172,7 @@ class PatternReducibility:
             for c in self.repr_to_red.keys():
                 if self.repr_to_red[c]["rank"] == float("inf"):  # If `c` is not known to be reducible:
                     # We re-check with our knowledge of colorings of rank < `i`.
-                    res = self.is_coloring_reducible(c, i)
+                    res = self._is_coloring_reducible(c, i)
                     if res["reducible"]:
                         found_changed = True  # At least one coloring of rank `i` has been found.
                         self.repr_to_red[c]["rank"] = i

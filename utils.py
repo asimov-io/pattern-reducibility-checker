@@ -19,7 +19,7 @@ def colorings(n: int):
     return product([Color.ONE, Color.TWO, Color.THREE], repeat=n)
 
 
-def color_permutations():
+def _color_permutations():
     """
     Enumerates the 6 color permutations.
 
@@ -29,7 +29,7 @@ def color_permutations():
         yield {Color(i + 1): Color(sigma[i]) for i in range(3)}
 
 
-def permute(coloring: tuple[Color, ...], sigma: dict[Color, Color]) -> tuple[Color, ...]:
+def _permute(coloring: tuple[Color, ...], sigma: dict[Color, Color]) -> tuple[Color, ...]:
     """
     Composes a permutation with a coloring.
 
@@ -57,5 +57,5 @@ def color_repr(coloring: tuple[Color, ...]) -> tuple[Color, ...]:
     :param coloring: A coloring represented by a tuple of colors.
     :return: The minimum color permutation of `coloring` according to the lexicographic order.
     """
-    return min((permute(coloring, sigma) for sigma in color_permutations()),
+    return min((_permute(coloring, sigma) for sigma in _color_permutations()),
                key=coloring_to_int)
