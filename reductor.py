@@ -74,11 +74,11 @@ class PatternReducibility:
                 # We build the `ThreeColoration` instance from the line graph by adding the constraints from `c`:
                 if ThreeColoration(self.line_graph, {self.outgoing[i]: c[i] for i in range(self.k)}).colorable():
                     # The frontier coloring `c` is extendable into a coloring, so it is reducible, of rank 0.
-                    self.repr_to_red[c] = {"reducible": True, "rank": 0, "reason": "extendable"}
+                    self.repr_to_red[c] = {"rank": 0, "reason": "extendable"}
                 else:
                     # The frontier coloring `c` is not extendable into a coloring.
                     # We do not know yet if it is reducible. For now, it is considered non-reducible.
-                    self.repr_to_red[c] = {"reducible": False, "rank": -1, "reason": ""}
+                    self.repr_to_red[c] = {"rank": float("inf"), "reason": ""}
 
     def representative(self, c: tuple[Color, ...]) -> tuple[Color, ...]:
         """
@@ -89,15 +89,15 @@ class PatternReducibility:
         """
         return self.repr_map[self.color_repr_map[c]]
 
-    def make_aux_graph(self, c: tuple[Color, ...], color_pair: tuple[Color, Color]):
+    def make_aux_graph(self, c: tuple[Color, ...], r: int, color_pair: tuple[Color, Color]):
         """
         Returns the auxiliary graph of `c` with respect to Γ and `color_pair` where Γ is the set of the colorings
-        that are already proven reducible, i.e. Γ = {`c'` coloring such that `self.repr_to_red[c']["reducible"] =
-        True`}.
+        that are already proven of rank < `r`, i.e. Γ = {`c'` coloring such that `self.repr_to_red[c']["rank"] < r`}.
 
         :param c: A coloring represented by a tuple of colors.
+        :param r: A rank.
         :param color_pair: A pair of colors represented by a tuple of two colors.
-        :return: The auxiliary graph of `c` with respect to the set of known reducible colorings and `color_pair`,
+        :return: The auxiliary graph of `c` with respect to the set of known colorings of rank < `r` and `color_pair`,
         as an instance of NCPQMatching.
         """
         def swap(indices: set[int]) -> tuple[Color, ...]:
@@ -126,17 +126,18 @@ class PatternReducibility:
         for u in g.keys():
             for v in g.keys():
                 # If `u` = `v`, `{u, v}` = `{u}` and we only swap the edge indexed by `u`.
-                if not self.repr_to_red[self.representative(swap({u, v}))]["reducible"]:
+                if self.repr_to_red[self.representative(swap({u, v}))]["rank"] >= r:
                     # We follow the rules given in definition 2.4 for adding edges and loops.
                     g[u].add(v)
                     g[v].add(u)
         return NCPQMatching(g)
 
-    def is_coloring_reducible(self, c: tuple[Color, ...]):
+    def is_coloring_reducible(self, c: tuple[Color, ...], r: int):
         """
-        Determines whether coloring `c` is reducible to the set of known reducible colorings.
+        Determines whether coloring `c` is reducible to the set of known colorings of rank < `r`.
 
         :param c: A coloring represented by a tuple of colors.
+        :param r: A rank.
         :return: `{"reducible": True, "color pair": (i, j)}` if `c` is proven reducible using color pair `(i, j)`,
         or `{"reducible": False, "color pair": ()}` if no color pair can achieve this.
         """
@@ -145,7 +146,7 @@ class PatternReducibility:
             color1, color2 = {1, 2, 3} - {color}
             if c != tuple(Color(color) for _ in range(self.k)):
                 # We do not consider the case where the auxiliary graph is empty — it is trivially matchable.
-                aux_graph = self.make_aux_graph(c, (Color(color1), Color(color2)))
+                aux_graph = self.make_aux_graph(c, r, (Color(color1), Color(color2)))
                 if not aux_graph.matchable():
                     return {"reducible": True, "color pair": (color1, color2)}
         return {"reducible": False, "color pair": ()}
@@ -161,28 +162,26 @@ class PatternReducibility:
         found_changed = True
         i = 1
 
-        # Main loop. After the `i`-th iteration, every coloring of rank <= `i` is in {c' coloring such that
-        # `repr_to_red[repr[c']]["reducible"] = True`}.
+        # Main loop. After the `i`-th iteration, every coloring `c` of rank <= `i` has its correct rank inscribed in
+        # `self.repr_to_red[c]["rank"]`.
         while found_changed:
-            new = []  # List of the newfound reducible colorings of this iteration.
+            found_changed = False
             found_non_reducible = False
 
             # For each representative coloring `c`:
             for c in self.repr_to_red.keys():
-                if not self.repr_to_red[c]["reducible"]:  # if `c` is not known to be reducible:
-                    # We re-check with our knowledge of colorings of rank <= `i - 1`.
-                    res = self.is_coloring_reducible(c)
+                if self.repr_to_red[c]["rank"] == float("inf"):  # if `c` is not known to be reducible:
+                    # We re-check with our knowledge of colorings of rank < `i`.
+                    res = self.is_coloring_reducible(c, i)
                     if res["reducible"]:
-                        # We do not register the newfound reducible colorings as being of rank `i` right away.
-                        # If we did, it could compute incorrectly the rank of the subsequent reducible colorings.
-                        new.append((c, res["color pair"]))
+                        found_changed = True  # At least one coloring of rank `i` has been found.
+                        self.repr_to_red[c]["rank"] = i
+                        color_pair = res["color pair"]
+                        self.repr_to_red[c]["reason"] = f"reducible with color pair " \
+                                                        f"{str(color_pair[0])}/{str(color_pair[1])}"
                     else:
                         found_non_reducible = True  # At least one coloring of rank > `i` has been found.
-            found_changed = (new != [])  # At least one coloring of rank `i` has been found.
-            for c, color_pair in new:
-                self.repr_to_red[c]["reducible"] = True
-                self.repr_to_red[c]["rank"] = i
-                self.repr_to_red[c]["reason"] = f"reducible with color pair {str(color_pair[0])}/{str(color_pair[1])}"
+
             i += 1
 
         if display:
@@ -198,6 +197,6 @@ class PatternReducibility:
 
             print("\nNon reducible colorations:\n")
             for c, red in self.repr_to_red.items():
-                if not red["reducible"]:
+                if red["rank"] == float("inf"):
                     print(c)
         return not found_non_reducible
