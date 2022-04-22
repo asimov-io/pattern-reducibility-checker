@@ -159,12 +159,11 @@ class PatternReducibility:
         :return: `True` if the pattern is reducible (every representative coloring is reducible), `False` otherwise.
         """
         found_changed = True
-        i = 0
+        i = 1
 
         # Main loop. After the `i`-th iteration, every coloring of rank <= `i` is in {c' coloring such that
         # `repr_to_red[repr[c']]["reducible"] = True`}.
         while found_changed:
-            i += 1
             new = []  # List of the newfound reducible colorings of this iteration.
             found_non_reducible = False
 
@@ -184,10 +183,11 @@ class PatternReducibility:
                 self.repr_to_red[c]["reducible"] = True
                 self.repr_to_red[c]["rank"] = i
                 self.repr_to_red[c]["reason"] = f"reducible with color pair {str(color_pair[0])}/{str(color_pair[1])}"
+            i += 1
 
         if display:
-            # The last rank attributed to a coloring is `i - 1`.
-            for r in range(i):
+            # The last rank attributed to a coloring is `i - 2`.
+            for r in range(i - 1):
                 # Filters the representatives of rank `r`.
                 rank_r = [(c, red) for (c, red) in self.repr_to_red.items() if red["rank"] == r]
                 nb_r = len(rank_r)
