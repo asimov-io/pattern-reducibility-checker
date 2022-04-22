@@ -10,7 +10,7 @@ class CNFSAT:
     """
     def __init__(self, clauses: list[set[int]]) -> None:
         """
-        Constructs an instance of CNF-SAT.
+        Constructs an instance of `CNFSAT`.
         
         :param clauses: A list of clauses, where each clause is represented by a set of literals, where the literals
         are represented by integers, with a positive integer `n` representing the propositional variable x_n,
@@ -40,7 +40,7 @@ class CNFSAT:
         """
         A pure literal is a literal that appears in the formula but whose negation does not.
 
-        :return: Returns a pure literal if there is one, `None` otherwise.
+        :return: Returns a pure literal if there is one, `None` otherwise; without modifying `self`.
         """
         lits = self._literals()
         for lit in lits:

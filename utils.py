@@ -34,7 +34,7 @@ def permute(coloring: tuple[Color, ...], sigma: dict[Color, Color]) -> tuple[Col
     Composes a permutation with a coloring.
 
     :param coloring: A coloring represented by a tuple of colors.
-    :param sigma: A color permutation represented by a Color->Color mapping.
+    :param sigma: A color permutation represented by a `Color` -> `Color` mapping.
     :return: The coloring `sigma` circle `coloring`.
     """
     return tuple(sigma[c] for c in coloring)

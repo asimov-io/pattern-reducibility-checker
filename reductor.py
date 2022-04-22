@@ -11,7 +11,7 @@ class PatternReducibility:
     """
     def __init__(self, line_graph: list[list[int]], outgoing: list[int], symmetries: list[list[int]]) -> None:
         """
-        Constructs an instance of Pattern Reducibility.
+        Constructs an instance of `PatternReducibility`.
 
         :param line_graph: Line graph of the pattern, given by adjacency list.
         :param outgoing: List of outgoing vertices (vertices of the line graph corresponding to outgoing edges of the
@@ -69,7 +69,7 @@ class PatternReducibility:
                                    key=coloring_to_int)
             if self.repr_map[c] == c:
                 # `c` is a representative, so we want to compute its reducibility and rank. The first step is to
-                # check if it is extendable into a coloring, and put the result in the `repr_to_red` mapping.
+                # check if it is extendable into a coloring, and put the result in the `self.repr_to_red` mapping.
 
                 # We build the `ThreeColoration` instance from the line graph by adding the constraints from `c`:
                 if ThreeColoration(self.line_graph, {self.outgoing[i]: c[i] for i in range(self.k)}).colorable():
@@ -98,13 +98,13 @@ class PatternReducibility:
         :param r: A rank.
         :param color_pair: A pair of colors represented by a tuple of two colors.
         :return: The auxiliary graph of `c` with respect to the set of known colorings of rank < `r` and `color_pair`,
-        as an instance of NCPQMatching.
+        as an instance of `NCPQMatching`.
         """
         def swap(indices: set[int]) -> tuple[Color, ...]:
             """
             Switches the colors of the outgoing vertices listed in `indices`.
 
-            :param indices: One or two distinct outgoing edges, given by a set of integers.
+            :param indices: One or two distinct outgoing vertices, given by a set of integers.
             :return: The coloring obtained from `c` by switching the color assigned to the outgoing vertices
             listed in `indices` from i to j or j to i, where (i, j) = `color_pair`.
             """
@@ -153,7 +153,7 @@ class PatternReducibility:
 
     def is_pattern_reducible(self, display=False) -> bool:
         """
-        Computes the reducibility and rank of every representative coloring of the pattern.
+        Computes the rank of every representative coloring of the pattern.
 
         :param display: Boolean value that defaults to `False`. If set to `True`, the method will display the reducible
         colorings, distributed among the various ranks, with a last category containing the non-reducible ones.
@@ -170,7 +170,7 @@ class PatternReducibility:
 
             # For each representative coloring `c`:
             for c in self.repr_to_red.keys():
-                if self.repr_to_red[c]["rank"] == float("inf"):  # if `c` is not known to be reducible:
+                if self.repr_to_red[c]["rank"] == float("inf"):  # If `c` is not known to be reducible:
                     # We re-check with our knowledge of colorings of rank < `i`.
                     res = self.is_coloring_reducible(c, i)
                     if res["reducible"]:

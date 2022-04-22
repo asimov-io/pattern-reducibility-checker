@@ -11,15 +11,15 @@ class ThreeColoration:
     """
     def __init__(self, adj: list[list[int]], constraints: dict[int, Color] = None):
         """
-        Constructs an instance of 3-Coloration.
+        Constructs an instance of `ThreeColoration`.
 
         :param adj: The adjacency list of the graph.
         :param constraints: A dictionary of (vertex to color) constraints.
 
         :Example:
 
-        ThreeColoration([[1], [0, 2, 3], [1, 3], [1, 2, 4, 8], [3, 5, 6, 8], [4, 6], [4, 5, 7], [6], [3, 4, 9], [8]],
-                 {0: Color.ONE, 2: Color.ONE, 5: Color.ONE, 7: Color.ONE, 9: Color.TWO})
+        `ThreeColoration([[1], [0, 2, 3], [1, 3], [1, 2, 4, 8], [3, 5, 6, 8], [4, 6], [4, 5, 7], [6], [3, 4, 9], [8]],
+                 {0: Color.ONE, 2: Color.ONE, 5: Color.ONE, 7: Color.ONE, 9: Color.TWO})`
         """
         self._n = len(adj)
         self._constraints = constraints
@@ -30,7 +30,7 @@ class ThreeColoration:
         The propositional variable x_{vertex, color} represents `vertex` being colored by `color`.
 
         :param vertex: A vertex of the graph (`0 <= vertex < self._n`).
-        :param color: A color (`color` must be in {1, 2, 3}).
+        :param color: A color (`color` must be in `{1, 2, 3}`).
         :return: Returns the (injective) integer representation of x_{vertex, color}.
         """
         assert(0 <= vertex < self._n and 1 <= color <= 3)

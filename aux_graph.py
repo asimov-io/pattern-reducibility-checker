@@ -13,7 +13,7 @@ class NCPQMatching:
 
     def __init__(self, pseudo_graph: dict[int, set[int]]) -> None:
         """
-        Constructs an instance of NCPQM from a pseudo-graph.
+        Constructs an instance of `NCPQMatching` from a pseudo-graph.
 
         :param pseudo_graph: A pseudo-graph represented by a dictionary mapping each vertex to its set of neighbours.
 
@@ -22,7 +22,7 @@ class NCPQMatching:
         """
         self._graph = pseudo_graph  # Vertices of the pseudo-graph are positive integers.
         self._edges = {(min(u, v), max(u, v)) for u, neigh in pseudo_graph.items() for v in neigh}  # The edges of
-        # the pseudo-graph.
+        # the pseudo-graph. By convention, the smaller vertex of the edge is written first to prevent duplications.
 
     @staticmethod
     def _crossing(edge1: tuple[int, int], edge2: tuple[int, int]) -> bool:
